@@ -1,0 +1,169 @@
+#include <iostream>
+#include <string>
+#include <fstream> //form work with files
+
+using namespace std;
+
+const int MAX_USERS = 500;
+
+struct User {
+    string username;
+    string password;
+};
+
+class PasswordDatabase {
+private:
+    User database[MAX_USERS];
+    int count;
+
+public:
+    PasswordDatabase() : count(0) {}
+
+    void addPassword(const string& username, const string& password) {
+        if (count >= MAX_USERS) {
+            cout << "Database is full!\n";
+            return;
+        }
+        for (int i = 0; i < count; i++) {
+            if (database[i].username == username) {
+                cout << "Username already exists!\n";
+                return;
+            }
+        }
+
+        database[count].username = username;
+        database[count].password = password;
+        count++;
+        cout << "Password added for user: " << username << endl;
+    }
+
+    void getPassword(const string& username) const {
+        for (int i = 0; i < count; i++) {
+            if (database[i].username == username) {
+                cout << "Password for user " << username << ": " << database[i].password << endl;
+                return;
+            }
+        }
+        cout << "Username not found.\n";
+    }
+
+    void deletePassword(const string& username) {
+        for (int i = 0; i < count; i++) {
+            if (database[i].username == username) {
+                for (int j = i; j < count - 1; j++) {
+                    database[j] = database[j + 1];
+                }
+                count--;
+                cout << "Password for user " << username << " deleted.\n";
+                return;
+            }
+        }
+        cout << "Username not found.\n";
+    }
+
+    void showAllUsers() const {
+        if (count == 0) {
+            cout << "Database is empty.\n";
+        }
+        else {
+            cout << "User list:\n";
+            for (int i = 0; i < count; i++) {
+                cout << "User: " << database[i].username << ", Password: " << database[i].password << endl;
+            }
+        }
+    }
+
+    void saveToFile(const string& filename) const {
+        ofstream file(filename);
+        if (file.is_open()) {
+            for (int i = 0; i < count; i++) {
+                file << database[i].username << " " << database[i].password << endl;
+            }
+            file.close();
+            cout << "Database saved to file: " << filename << endl;
+        }
+        else {
+            cout << "Failed to open file for writing.\n";
+        }
+    }
+
+    void loadFromFile(const string& filename) {
+        ifstream file(filename);
+        if (file.is_open()) {
+            string username, password;
+            while (file >> username >> password) {
+                addPassword(username, password);
+            }
+            file.close();
+            cout << "Database loaded from file: " << filename << endl;
+        }
+        else {
+            cout << "Failed to open file for reading.\n";
+        }
+    }
+};
+
+void showMenu() {
+    cout << "\n=== Password Database Menu ===\n";
+    cout << "1. Add password\n";
+    cout << "2. Get password\n";
+    cout << "3. Delete password\n";
+    cout << "4. Show all users\n";
+    cout << "5. Save database to file\n";
+    cout << "6. Load database from file\n";
+    cout << "0. Exit\n";
+    cout << "Choose an option: ";
+}
+
+int main() {
+    PasswordDatabase db;
+    int choice;
+    string username, password, filename;
+
+    cout << "Create by Yaroslav Yatsenko\n";
+
+    do {
+        showMenu();
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            cout << "Enter username: ";
+            cin >> username;
+            cout << "Enter password: ";
+            cin >> password;
+            db.addPassword(username, password);
+            break;
+        case 2:
+            cout << "Enter username: ";
+            cin >> username;
+            db.getPassword(username);
+            break;
+        case 3:
+            cout << "Enter username: ";
+            cin >> username;
+            db.deletePassword(username);
+            break;
+        case 4:
+            db.showAllUsers();
+            break;
+        case 5:
+            cout << "Enter filename: ";
+            cin >> filename;
+            db.saveToFile(filename);
+            break;
+        case 6:
+            cout << "Enter filename: ";
+            cin >> filename;
+            db.loadFromFile(filename);
+            break;
+        case 0:
+            cout << "Exiting program. Goodbye!\n";
+            break;
+        default:
+            cout << "Invalid choice. Please try again.\n";
+        }
+    } while (choice != 0);
+
+    return 0;
+}
